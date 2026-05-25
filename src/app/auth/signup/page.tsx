@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -19,9 +20,12 @@ import {
   Eye,
   EyeOff,
   Shield,
+  AlertCircle,
+  CheckCircle2,
 } from 'lucide-react'
 
 export default function SignupPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [form, setForm] = useState({
@@ -35,15 +39,82 @@ export default function SignupPage() {
     terms: false,
   })
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
+    setSuccess('')
+
+    // Client-side validation
+    if (!form.name.trim()) {
+      setError('Please enter your name')
+      return
+    }
+
+    if (!form.email.trim()) {
+      setError('Please enter your email')
+      return
+    }
+
+    if (form.password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
+
+    if (form.password !== form.confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
+    if (!agreements.ageVerification) {
+      setError('Please confirm you are at least 18 years old')
+      return
+    }
+
+    if (!agreements.terms) {
+      setError('Please agree to the Terms of Service and Privacy Policy')
+      return
+    }
+
     setLoading(true)
-    setTimeout(() => setLoading(false), 1500)
+
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Something went wrong')
+        return
+      }
+
+      setSuccess('Account created successfully! Redirecting...')
+
+      // Redirect to dashboard after a short delay
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 1000)
+    } catch (err) {
+      setError('Network error. Please check your connection and try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const updateField = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
+    // Clear error when user starts typing
+    if (error) setError('')
   }
 
   return (
@@ -165,13 +236,37 @@ export default function SignupPage() {
 
           <Card className="border-0 shadow-xl">
             <CardHeader className="text-center">
-              <h2 className="text-2xl font-bold">Create Account 🌟</h2>
+              <h2 className="text-2xl font-bold">Create Account</h2>
               <CardDescription>
                 Start your storytelling journey today
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Error message */}
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/50 dark:text-red-400"
+                  >
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    {error}
+                  </motion.div>
+                )}
+
+                {/* Success message */}
+                {success && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-950/50 dark:text-green-400"
+                  >
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    {success}
+                  </motion.div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
                   <Input
@@ -180,6 +275,7 @@ export default function SignupPage() {
                     value={form.name}
                     onChange={(e) => updateField('name', e.target.value)}
                     className="h-11"
+                    required
                   />
                 </div>
 
@@ -192,6 +288,7 @@ export default function SignupPage() {
                     value={form.email}
                     onChange={(e) => updateField('email', e.target.value)}
                     className="h-11"
+                    required
                   />
                 </div>
 
@@ -201,10 +298,12 @@ export default function SignupPage() {
                     <Input
                       id="signupPassword"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Create a password"
+                      placeholder="Create a password (min. 6 characters)"
                       value={form.password}
                       onChange={(e) => updateField('password', e.target.value)}
                       className="h-11 pr-10"
+                      required
+                      minLength={6}
                     />
                     <button
                       type="button"
@@ -232,6 +331,7 @@ export default function SignupPage() {
                         updateField('confirmPassword', e.target.value)
                       }
                       className="h-11 pr-10"
+                      required
                     />
                     <button
                       type="button"
@@ -331,8 +431,13 @@ export default function SignupPage() {
                   className="h-11 w-full"
                   onClick={() => {
                     setLoading(true)
-                    setTimeout(() => setLoading(false), 1500)
+                    // Placeholder for Google OAuth integration
+                    setTimeout(() => {
+                      setLoading(false)
+                      setError('Google sign-up is coming soon!')
+                    }, 1500)
                   }}
+                  disabled={loading}
                 >
                   <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
                     <path

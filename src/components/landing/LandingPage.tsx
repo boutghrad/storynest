@@ -917,7 +917,7 @@ function FAQSection() {
         >
           <Card className="glass border-border/30">
             <CardContent className="p-2 sm:p-4">
-              <Accordion type="single" collapsible className="w-full">
+              <Accordion type="single" collapsible className="w-full" suppressHydrationWarning>
                 {faqs.map((faq, i) => (
                   <AccordionItem key={i} value={`faq-${i}`}>
                     <AccordionTrigger className="text-left text-sm sm:text-base font-medium hover:text-primary">

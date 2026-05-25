@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -18,20 +19,62 @@ import {
   Heart,
   Eye,
   EyeOff,
+  AlertCircle,
+  CheckCircle2,
 } from 'lucide-react'
 
 export default function LoginPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [remember, setRemember] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
+    setSuccess('')
+
+    if (!email.trim()) {
+      setError('Please enter your email')
+      return
+    }
+
+    if (!password) {
+      setError('Please enter your password')
+      return
+    }
+
     setLoading(true)
-    // Placeholder - simulate login
-    setTimeout(() => setLoading(false), 1500)
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Invalid email or password')
+        return
+      }
+
+      setSuccess('Welcome back! Redirecting...')
+
+      // Redirect to dashboard after a short delay
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 1000)
+    } catch (err) {
+      setError('Network error. Please check your connection and try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -150,13 +193,37 @@ export default function LoginPage() {
 
           <Card className="border-0 shadow-xl">
             <CardHeader className="text-center">
-              <h2 className="text-2xl font-bold">Welcome Back! ✨</h2>
+              <h2 className="text-2xl font-bold">Welcome Back!</h2>
               <CardDescription>
                 Sign in to continue your story adventure
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Error message */}
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/50 dark:text-red-400"
+                  >
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    {error}
+                  </motion.div>
+                )}
+
+                {/* Success message */}
+                {success && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-950/50 dark:text-green-400"
+                  >
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    {success}
+                  </motion.div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -164,8 +231,12 @@ export default function LoginPage() {
                     type="email"
                     placeholder="you@example.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value)
+                      if (error) setError('')
+                    }}
                     className="h-11"
+                    required
                   />
                 </div>
 
@@ -185,8 +256,12 @@ export default function LoginPage() {
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Enter your password"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value)
+                        if (error) setError('')
+                      }}
                       className="h-11 pr-10"
+                      required
                     />
                     <button
                       type="button"
@@ -241,8 +316,13 @@ export default function LoginPage() {
                   className="h-11 w-full"
                   onClick={() => {
                     setLoading(true)
-                    setTimeout(() => setLoading(false), 1500)
+                    // Placeholder for Google OAuth integration
+                    setTimeout(() => {
+                      setLoading(false)
+                      setError('Google sign-in is coming soon!')
+                    }, 1500)
                   }}
+                  disabled={loading}
                 >
                   <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
                     <path

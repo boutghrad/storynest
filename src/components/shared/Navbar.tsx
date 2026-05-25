@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { motion } from 'framer-motion'
 import {
@@ -12,7 +13,9 @@ import {
   Menu,
   User,
   LogIn,
+  LogOut,
   Sparkles,
+  LayoutDashboard,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -29,10 +32,19 @@ const navLinks = [
   { href: '/pricing', label: 'Pricing' },
 ]
 
+interface SessionUser {
+  userId: string
+  email: string
+  role: string
+}
+
 export function Navbar() {
   const { theme, setTheme } = useTheme()
+  const router = useRouter()
   const [scrolled, setScrolled] = React.useState(false)
   const [mounted, setMounted] = React.useState(false)
+  const [user, setUser] = React.useState<SessionUser | null>(null)
+  const [loggingOut, setLoggingOut] = React.useState(false)
 
   React.useEffect(() => {
     setMounted(true)
@@ -42,6 +54,38 @@ export function Navbar() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Check session on mount
+  React.useEffect(() => {
+    async function checkSession() {
+      try {
+        // Try to fetch user data to determine if logged in
+        // We read the cookie via a lightweight API call
+        const res = await fetch('/api/users/me')
+        if (res.ok) {
+          const data = await res.json()
+          setUser(data.user)
+        }
+      } catch {
+        // Not logged in - that's fine
+      }
+    }
+    checkSession()
+  }, [])
+
+  const handleLogout = async () => {
+    setLoggingOut(true)
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      setUser(null)
+      router.push('/')
+    } catch {
+      // Even if logout fails, clear local state
+      setUser(null)
+    } finally {
+      setLoggingOut(false)
+    }
+  }
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark')
@@ -123,24 +167,48 @@ export function Navbar() {
               </Button>
             )}
 
-            {/* Login / Signup - Desktop */}
-            <div className="hidden md:flex items-center gap-2">
-              <Link href="/auth/login">
+            {/* Auth Buttons - Desktop */}
+            {user ? (
+              <div className="hidden md:flex items-center gap-2">
+                <Link href="/dashboard">
+                  <Button
+                    variant="ghost"
+                    className="text-foreground/70 hover:text-foreground hover:bg-primary/5"
+                  >
+                    <LayoutDashboard className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Button>
+                </Link>
                 <Button
                   variant="ghost"
-                  className="text-foreground/70 hover:text-foreground hover:bg-primary/5"
+                  size="icon"
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  className="text-foreground/60 hover:text-foreground hover:bg-primary/5"
+                  title="Log out"
                 >
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Log in
+                  <LogOut className="h-4 w-4" />
                 </Button>
-              </Link>
-              <Link href="/auth/signup">
-                <Button className="gradient-magical text-white border-0 hover:opacity-90 transition-opacity shadow-lg shadow-primary/20">
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Sign up free
-                </Button>
-              </Link>
-            </div>
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center gap-2">
+                <Link href="/auth/login">
+                  <Button
+                    variant="ghost"
+                    className="text-foreground/70 hover:text-foreground hover:bg-primary/5"
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Log in
+                  </Button>
+                </Link>
+                <Link href="/auth/signup">
+                  <Button className="gradient-magical text-white border-0 hover:opacity-90 transition-opacity shadow-lg shadow-primary/20">
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Sign up free
+                  </Button>
+                </Link>
+              </div>
+            )}
 
             {/* Mobile Menu */}
             <Sheet>
@@ -172,22 +240,48 @@ export function Navbar() {
                       {link.label}
                     </Link>
                   ))}
-                  <div className="h-px bg-border my-4" />
-                  <Link href="/auth/login">
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full px-4 text-foreground/70 hover:text-foreground"
-                    >
-                      <LogIn className="h-4 w-4 mr-3" />
-                      Log in
-                    </Button>
-                  </Link>
-                  <Link href="/auth/signup">
-                    <Button className="gradient-magical text-white border-0 hover:opacity-90 w-full">
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Sign up free
-                    </Button>
-                  </Link>
+                  {user ? (
+                    <>
+                      <div className="h-px bg-border my-4" />
+                      <Link href="/dashboard">
+                        <Button
+                          variant="ghost"
+                          className="justify-start w-full px-4 text-foreground/70 hover:text-foreground"
+                        >
+                          <LayoutDashboard className="h-4 w-4 mr-3" />
+                          Dashboard
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full px-4 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                        onClick={handleLogout}
+                        disabled={loggingOut}
+                      >
+                        <LogOut className="h-4 w-4 mr-3" />
+                        Log out
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="h-px bg-border my-4" />
+                      <Link href="/auth/login">
+                        <Button
+                          variant="ghost"
+                          className="justify-start w-full px-4 text-foreground/70 hover:text-foreground"
+                        >
+                          <LogIn className="h-4 w-4 mr-3" />
+                          Log in
+                        </Button>
+                      </Link>
+                      <Link href="/auth/signup">
+                        <Button className="gradient-magical text-white border-0 hover:opacity-90 w-full">
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Sign up free
+                        </Button>
+                      </Link>
+                    </>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>

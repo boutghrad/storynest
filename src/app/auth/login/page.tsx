@@ -45,25 +45,46 @@ export default function LoginPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 1 }}
         >
-          {[...Array(20)].map((_, i) => (
+          {[
+            { w: 45, h: 45, l: 12, t: 8, x: 5, dur: 4.2, del: 0.1 },
+            { w: 30, h: 30, l: 75, t: 22, x: -8, dur: 3.5, del: 0.8 },
+            { w: 60, h: 60, l: 45, t: 55, x: 3, dur: 5.0, del: 1.4 },
+            { w: 25, h: 25, l: 88, t: 70, x: -4, dur: 3.8, del: 0.5 },
+            { w: 50, h: 50, l: 30, t: 85, x: 7, dur: 4.6, del: 1.9 },
+            { w: 35, h: 35, l: 60, t: 35, x: -6, dur: 3.2, del: 0.3 },
+            { w: 40, h: 40, l: 5, t: 60, x: 4, dur: 4.8, del: 1.1 },
+            { w: 55, h: 55, l: 80, t: 45, x: -3, dur: 3.6, del: 1.6 },
+            { w: 28, h: 28, l: 50, t: 10, x: 9, dur: 5.2, del: 0.7 },
+            { w: 42, h: 42, l: 20, t: 40, x: -5, dur: 4.0, del: 1.3 },
+            { w: 38, h: 38, l: 70, t: 90, x: 6, dur: 3.4, del: 0.9 },
+            { w: 52, h: 52, l: 35, t: 15, x: -7, dur: 4.4, del: 1.7 },
+            { w: 22, h: 22, l: 92, t: 30, x: 2, dur: 5.5, del: 0.4 },
+            { w: 48, h: 48, l: 15, t: 75, x: -9, dur: 3.9, del: 1.0 },
+            { w: 33, h: 33, l: 55, t: 65, x: 8, dur: 4.1, del: 0.6 },
+            { w: 58, h: 58, l: 40, t: 50, x: -2, dur: 3.3, del: 1.5 },
+            { w: 27, h: 27, l: 85, t: 5, x: 5, dur: 4.7, del: 1.8 },
+            { w: 44, h: 44, l: 65, t: 80, x: -4, dur: 3.7, del: 0.2 },
+            { w: 36, h: 36, l: 10, t: 45, x: 3, dur: 5.1, del: 1.2 },
+            { w: 50, h: 50, l: 25, t: 25, x: -6, dur: 4.3, del: 0.8 },
+          ].map((b, i) => (
             <motion.div
               key={i}
               className="absolute rounded-full bg-white/10"
               style={{
-                width: Math.random() * 60 + 20,
-                height: Math.random() * 60 + 20,
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
+                width: b.w,
+                height: b.h,
+                left: `${b.l}%`,
+                top: `${b.t}%`,
               }}
               animate={{
                 y: [0, -30, 0],
-                x: [0, Math.random() * 20 - 10, 0],
+                x: [0, b.x, 0],
                 opacity: [0.3, 0.6, 0.3],
               }}
               transition={{
-                duration: Math.random() * 4 + 3,
+                duration: b.dur,
                 repeat: Infinity,
-                delay: Math.random() * 2,
+                delay: b.del,
               }}
             />
           ))}

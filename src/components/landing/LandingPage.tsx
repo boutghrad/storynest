@@ -179,23 +179,30 @@ function HeroSection() {
         🧚
       </motion.div>
 
-      {/* Sparkles */}
-      {[...Array(6)].map((_, i) => (
+      {/* Sparkles — positions are deterministic to avoid hydration mismatch */}
+      {[
+        { top: 22, left: 45, dur: 2.4, del: 0.3 },
+        { top: 58, left: 72, dur: 3.1, del: 1.8 },
+        { top: 35, left: 18, dur: 2.7, del: 0.9 },
+        { top: 75, left: 62, dur: 3.5, del: 2.4 },
+        { top: 48, left: 88, dur: 2.2, del: 1.2 },
+        { top: 15, left: 35, dur: 3.0, del: 2.7 },
+      ].map((s, i) => (
         <motion.div
           key={i}
           className="absolute"
           style={{
-            top: `${15 + Math.random() * 70}%`,
-            left: `${10 + Math.random() * 80}%`,
+            top: `${s.top}%`,
+            left: `${s.left}%`,
           }}
           animate={{
             opacity: [0, 1, 0],
             scale: [0.5, 1, 0.5],
           }}
           transition={{
-            duration: 2 + Math.random() * 2,
+            duration: s.dur,
             repeat: Infinity,
-            delay: Math.random() * 3,
+            delay: s.del,
           }}
         >
           <Sparkles className="h-3 w-3 text-magical-amber" />

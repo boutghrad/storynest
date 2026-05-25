@@ -50,5 +50,14 @@ test
 prompt
 
 server.log
+
 # Skills directory
 /skills/
+
+# Agent / internal directories
+/agent-ctx/
+/.zscripts/
+/upload/
+/worklog.md
+/db/
+Caddyfile

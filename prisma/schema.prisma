@@ -1,0 +1,280 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String?
+  image         String?
+  role          String    @default("user") // user, author, admin
+  provider      String    @default("credentials") // credentials, google
+  emailVerified Boolean   @default(false)
+  readingStreak Int       @default(0)
+  lastReadAt    DateTime?
+  language      String    @default("en")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  favorites     Favorite[]
+  readingHistory ReadingHistory[]
+  bookmarks     Bookmark[]
+  subscriptions Subscription[]
+  childProfiles ChildProfile[]
+  badges        UserBadge[]
+  notifications Notification[]
+  author        Author?
+
+  @@index([email])
+  @@index([role])
+}
+
+model ChildProfile {
+  id       String  @id @default(cuid())
+  userId   String
+  name     String
+  age      Int
+  avatar   String?
+  grade    String?
+
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Author {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  bio         String?
+  website     String?
+  avatar      String?
+  verified    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id])
+  stories     Story[]
+
+  @@index([userId])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  icon        String?
+  color       String?
+  order       Int      @default(0)
+  stories     StoryCategory[]
+
+  @@index([slug])
+}
+
+model Tag {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  slug    String   @unique
+  stories StoryTag[]
+
+  @@index([slug])
+}
+
+model Story {
+  id            String    @id @default(cuid())
+  title         String
+  slug          String    @unique
+  description   String?
+  coverImage    String?
+  ageMin        Int       @default(3)
+  ageMax        Int       @default(12)
+  language      String    @default("en")
+  featured      Boolean   @default(false)
+  trending      Boolean   @default(false)
+  published     Boolean   @default(false)
+  premium       Boolean   @default(false)
+  readCount     Int       @default(0)
+  favoriteCount Int       @default(0)
+  rating        Float     @default(0)
+  ratingCount   Int       @default(0)
+  duration      Int       @default(5) // minutes
+  authorId      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  author        Author?   @relation(fields: [authorId], references: [id])
+  chapters      Chapter[]
+  categories    StoryCategory[]
+  tags          StoryTag[]
+  favorites     Favorite[]
+  readingHistory ReadingHistory[]
+  bookmarks     Bookmark[]
+
+  @@index([slug])
+  @@index([featured])
+  @@index([trending])
+  @@index([published])
+  @@index([authorId])
+  @@index([language])
+}
+
+model Chapter {
+  id        String   @id @default(cuid())
+  storyId   String
+  title     String
+  content   String
+  order     Int
+  image     String?
+  duration  Int      @default(2) // minutes
+
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@index([storyId])
+  @@index([storyId, order])
+}
+
+model StoryCategory {
+  storyId    String
+  categoryId String
+
+  story      Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([storyId, categoryId])
+}
+
+model StoryTag {
+  storyId String
+  tagId   String
+
+  story   Story   @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([storyId, tagId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  storyId   String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storyId])
+  @@index([userId])
+  @@index([storyId])
+}
+
+model ReadingHistory {
+  id         String   @id @default(cuid())
+  userId     String
+  storyId    String
+  chapterId  String?
+  progress   Float    @default(0) // 0-100 percentage
+  lastReadAt DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story      Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storyId])
+  @@index([userId])
+  @@index([userId, lastReadAt])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  storyId   String
+  chapterId String?
+  note      String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([storyId])
+}
+
+model Subscription {
+  id                  String   @id @default(cuid())
+  userId              String
+  plan                String   @default("free") // free, monthly, yearly
+  stripeCustomerId    String?  @unique
+  stripePriceId       String?
+  stripeSubId         String?  @unique
+  status              String   @default("active") // active, canceled, past_due
+  currentPeriodStart  DateTime?
+  currentPeriodEnd    DateTime?
+  cancelAtPeriodEnd   Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([stripeCustomerId])
+  @@index([status])
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  icon        String
+  category    String   // reading, streak, social, achievement
+
+  userBadges  UserBadge[]
+
+  @@index([category])
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  earnedAt  DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("info") // info, success, warning, error
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, read])
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  content   String
+  avatar    String?
+  rating    Int      @default(5)
+  featured  Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([featured])
+}

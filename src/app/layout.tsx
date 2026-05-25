@@ -32,8 +32,13 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "StoryNest Team" }],
   icons: {
-    icon: "/logo.svg",
+    icon: [
+      { url: "/logo.png", sizes: "1024x1024", type: "image/png" },
+      { url: "/logo.svg", sizes: "any", type: "image/svg+xml" },
+    ],
+    apple: "/logo.png",
   },
+  metadataBase: new URL("https://storynest.com"),
   openGraph: {
     title: "StoryNest — Where Stories Come Alive",
     description:

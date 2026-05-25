@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { motion, useInView } from 'framer-motion'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   BookOpen,
   Sparkles,
@@ -215,6 +216,23 @@ function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
         >
+          {/* Logo */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1, duration: 0.6, ease: 'easeOut' }}
+            className="mb-6"
+          >
+            <Image
+              src="/logo.png"
+              alt="StoryNest"
+              width={80}
+              height={80}
+              className="mx-auto rounded-2xl shadow-lg shadow-primary/20"
+              priority
+            />
+          </motion.div>
+
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}

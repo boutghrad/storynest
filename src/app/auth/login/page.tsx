@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card'
@@ -139,8 +140,14 @@ export default function LoginPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-              <BookOpen className="h-10 w-10" />
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm p-2">
+              <Image
+                src="/logo.png"
+                alt="StoryNest"
+                width={64}
+                height={64}
+                className="rounded-xl"
+              />
             </div>
             <h1 className="text-4xl font-bold">StoryNest</h1>
             <p className="mt-3 text-lg text-white/80">
@@ -186,9 +193,13 @@ export default function LoginPage() {
         >
           {/* Mobile logo */}
           <div className="mb-8 flex items-center justify-center lg:hidden">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-rose-500 text-white">
-              <BookOpen className="h-7 w-7" />
-            </div>
+            <Image
+              src="/logo.png"
+              alt="StoryNest"
+              width={56}
+              height={56}
+              className="rounded-xl"
+            />
           </div>
 
           <Card className="border-0 shadow-xl">

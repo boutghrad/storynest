@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { BookOpen, Sparkles, Heart, Mail, Twitter, Instagram, Youtube } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -44,8 +45,14 @@ export function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
             {/* Brand column */}
             <div className="lg:col-span-2">
-              <Link href="/" className="flex items-center gap-2 group mb-4">
-                <BookOpen className="h-7 w-7 text-primary animate-float-slow" />
+              <Link href="/" className="flex items-center gap-2.5 group mb-4">
+                <Image
+                  src="/logo.png"
+                  alt="StoryNest"
+                  width={36}
+                  height={36}
+                  className="rounded-lg"
+                />
                 <span className="text-xl font-bold text-gradient-magical">
                   StoryNest
                 </span>

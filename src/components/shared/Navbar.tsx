@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import {
   BookOpen,
   Search,
@@ -105,13 +106,20 @@ export function Navbar() {
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center gap-2.5 group">
             <motion.div
               className="relative"
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <BookOpen className="h-8 w-8 text-primary animate-float" />
+              <Image
+                src="/logo.png"
+                alt="StoryNest"
+                width={40}
+                height={40}
+                className="rounded-lg"
+                priority
+              />
               <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-magical-amber animate-twinkle" />
             </motion.div>
             <span className="text-xl font-bold text-gradient-magical">
@@ -224,7 +232,13 @@ export function Navbar() {
               <SheetContent side="right" className="w-80">
                 <SheetHeader>
                   <SheetTitle className="flex items-center gap-2">
-                    <BookOpen className="h-6 w-6 text-primary" />
+                    <Image
+                      src="/logo.png"
+                      alt="StoryNest"
+                      width={32}
+                      height={32}
+                      className="rounded-md"
+                    />
                     <span className="text-gradient-magical font-bold">
                       StoryNest
                     </span>
